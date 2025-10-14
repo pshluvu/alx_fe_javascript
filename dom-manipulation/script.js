@@ -12,12 +12,14 @@ function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const randomQuote = quotes[randomIndex];
 
-  // Update DOM dynamically
-  document.getElementById("quoteText").textContent = `"${randomQuote.text}"`;
-  document.getElementById("quoteCategory").textContent = `— Category: ${randomQuote.category}`;
+  // Update DOM dynamically using innerHTML
+  document.getElementById("quoteDisplay").innerHTML = `
+    <p id="quoteText">"${randomQuote.text}"</p>
+    <p id="quoteCategory">— Category: ${randomQuote.category}</p>
+  `;
 }
 
-// Function to create and handle the quote addition
+// Function to add a new quote dynamically
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
   const categoryInput = document.getElementById("newQuoteCategory");
@@ -30,16 +32,21 @@ function addQuote() {
     return;
   }
 
-  // Add new quote to the array
+  // Add new quote to array
   quotes.push({ text, category });
 
-  // Clear input fields
+  // Show confirmation dynamically
+  document.getElementById("quoteDisplay").innerHTML = `
+    <p id="quoteText">New quote added successfully!</p>
+    <p id="quoteCategory">"${text}" — ${category}</p>
+  `;
+
+  // Clear inputs
   textInput.value = "";
   categoryInput.value = "";
-
-  alert("Quote added successfully!");
 }
 
 // Event listeners for buttons
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
+
