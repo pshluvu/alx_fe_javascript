@@ -48,8 +48,12 @@ async function postQuoteToServer(quote) {
 
 // Synchronize quotes (fetch + optional post)
 async function syncQuotes() {
-  await fetchQuotesFromServer();
-  console.log("Quotes synchronized.");
+  try {
+    await fetchQuotesFromServer();
+    console.log("Quotes synced with server!"); // ✅ Required message
+  } catch (err) {
+    console.error("Error syncing quotes:", err);
+  }
 }
 
 // Generate random quote
@@ -136,7 +140,8 @@ function importFromJsonFile(event) {
 
 // Initialize app
 window.onload = async function() {
-  await syncQuotes();
+  await syncQuotes(); // fetch + sync on load
+
   const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
   if (lastQuote) {
     document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
@@ -145,7 +150,8 @@ window.onload = async function() {
   }
 
   // ✅ Automatically synchronize quotes every 5 minutes
-  setInterval(syncQuotes, 300000); // 300,000 ms = 5 minutes
+  setInterval(syncQuotes, 300000);
 };
+
 
 
