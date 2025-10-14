@@ -5,15 +5,46 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Dynamic Quote Generator</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 32px; background:#f7f7f7; }
-    #quoteDisplay { margin: 20px auto; padding: 20px; width: 70%; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    #quoteCategory { color: #666; font-style: italic; margin-top:8px; }
-    input { margin: 6px; padding: 8px; }
-    button { padding: 8px 12px; border: none; border-radius:6px; cursor: pointer; background:#0078D7; color:#fff; }
-    button.secondary { background:#666; }
-    .controls { margin-top: 14px; }
-    #addQuoteContainer { margin-top: 18px; }
-    small { color:#444; display:block; margin-top:8px; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 32px;
+      background: #f7f7f7;
+    }
+    #quoteDisplay {
+      margin: 20px auto;
+      padding: 20px;
+      width: 70%;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    #quoteCategory {
+      color: #666;
+      font-style: italic;
+      margin-top: 8px;
+    }
+    input {
+      margin: 6px;
+      padding: 8px;
+    }
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0078D7;
+      color: #fff;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .secondary {
+      background: #666;
+    }
+    .controls {
+      margin-top: 14px;
+    }
   </style>
 </head>
 <body>
@@ -28,7 +59,19 @@
     <button id="newQuote">Show New Quote</button>
   </div>
 
-  <!-- script.js will create the add/import/export UI dynamically -->
+  <h3>Add a New Quote</h3>
+  <div id="addQuoteContainer">
+    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+    <button id="addQuoteBtn">Add Quote</button>
+  </div>
+
+  <h3>Manage Quotes</h3>
+  <div id="manageContainer">
+    <button id="exportBtn" class="secondary">Export Quotes</button>
+    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
