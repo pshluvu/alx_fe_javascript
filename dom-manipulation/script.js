@@ -19,7 +19,6 @@ async function fetchQuotesFromServer() {
       category: "Fetched"
     }));
 
-    // Merge without duplicates
     const existingTexts = new Set(quotes.map(q => q.text));
     const newQuotes = serverQuotes.filter(q => !existingTexts.has(q.text));
     quotes.push(...newQuotes);
@@ -32,14 +31,12 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Post a quote to the server (POST)
+// Post a quote to server (POST)
 async function postQuoteToServer(quote) {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(quote)
     });
     const data = await response.json();
@@ -49,19 +46,10 @@ async function postQuoteToServer(quote) {
   }
 }
 
-// ✅ Synchronize quotes: fetch new quotes and post local unsynced quotes
+// Synchronize quotes (fetch + optional post)
 async function syncQuotes() {
-  try {
-    await fetchQuotesFromServer();
-
-    // Optional: send local quotes to server
-    // Here we can assume all local quotes are synced for simplicity
-    // You could track unsynced quotes with a flag if needed
-
-    console.log("Quotes synchronized successfully.");
-  } catch (err) {
-    console.error("Error syncing quotes:", err);
-  }
+  await fetchQuotesFromServer();
+  console.log("Quotes synchronized.");
 }
 
 // Generate random quote
@@ -90,9 +78,7 @@ function addQuote(event) {
     populateCategories();
     alert("Quote added successfully!");
     document.getElementById("addQuoteForm").reset();
-
-    // POST the new quote to server
-    postQuoteToServer(newQuote);
+    postQuoteToServer(newQuote); // POST to server
   }
 }
 
@@ -150,9 +136,16 @@ function importFromJsonFile(event) {
 
 // Initialize app
 window.onload = async function() {
-  await syncQuotes(); // Fetch + optionally post quotes to server
+  await syncQuotes();
   const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
-  if (lastQuote) document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
-  else generateQuote();
+  if (lastQuote) {
+    document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
+  } else {
+    generateQuote();
+  }
+
+  // ✅ Automatically synchronize quotes every 5 minutes
+  setInterval(syncQuotes, 300000); // 300,000 ms = 5 minutes
 };
+
 
