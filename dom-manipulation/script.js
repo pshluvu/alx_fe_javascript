@@ -1,33 +1,39 @@
 let quotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
 let lastSelectedCategory = localStorage.getItem("selectedCategory") || "all";
 
-// ✅ Save quotes to local storage
+// Save quotes to local storage
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// ✅ Fetch quotes from server or local JSON file
+// Fetch quotes from JSONPlaceholder
 async function fetchQuotesFromServer() {
   try {
-    const response = await fetch("quotes.json"); // Replace with your API endpoint if needed
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     if (!response.ok) throw new Error("Network response was not ok");
-    const serverQuotes = await response.json();
+    const data = await response.json();
 
-    // Merge new quotes, avoiding duplicates
+    // Map posts to quote objects: text = title, author = userId, category = "Fetched"
+    const serverQuotes = data.map(post => ({
+      text: post.title,
+      author: `User ${post.userId}`,
+      category: "Fetched"
+    }));
+
+    // Merge without duplicates
     const existingTexts = new Set(quotes.map(q => q.text));
     const newQuotes = serverQuotes.filter(q => !existingTexts.has(q.text));
     quotes.push(...newQuotes);
 
     saveQuotes();
     populateCategories();
-    console.log("Quotes fetched and saved successfully from server.");
-  } catch (error) {
-    console.error("Error fetching quotes:", error);
+    console.log("Fetched quotes from JSONPlaceholder API successfully.");
+  } catch (err) {
+    console.error("Error fetching quotes from server:", err);
   }
 }
 
-// ✅ Generate random quote
+// Generate random quote
 function generateQuote() {
   const filteredQuotes = getFilteredQuotes();
   if (filteredQuotes.length === 0) {
@@ -41,7 +47,7 @@ function generateQuote() {
   sessionStorage.setItem("lastQuote", JSON.stringify(randomQuote));
 }
 
-// ✅ Add new quote
+// Add new quote
 function addQuote(event) {
   event.preventDefault();
   const text = document.getElementById("quoteText").value.trim();
@@ -57,7 +63,7 @@ function addQuote(event) {
   }
 }
 
-// ✅ Populate categories dynamically
+// Populate categories dynamically
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   const categoryFilter = document.getElementById("categoryFilter");
@@ -71,7 +77,7 @@ function populateCategories() {
   });
 }
 
-// ✅ Filter quotes by selected category
+// Filter quotes by selected category
 function getFilteredQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
   if (selectedCategory === "all") return quotes;
@@ -80,5 +86,49 @@ function getFilteredQuotes() {
 
 function filterQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
-  localStorage.setItem("selectedCategory", selecte
+  localStorage.setItem("selectedCategory", selectedCategory);
+  lastSelectedCategory = selectedCategory;
+  generateQuote();
+}
+
+// Export quotes as JSON file
+function exportToJsonFile() {
+  const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(e) {
+    const importedQuotes = JSON.parse(e.target.result);
+    quotes.push(...importedQuotes);
+    saveQuotes();
+    populateCategories();
+    alert("Quotes imported successfully!");
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// Initialize app
+window.onload = async function() {
+  if (quotes.length === 0) {
+    await fetchQuotesFromServer(); // Fetch from JSONPlaceholder if localStorage empty
+  } else {
+    populateCategories();
+  }
+
+  const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
+  if (lastQuote) {
+    document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
+  } else {
+    generateQuote();
+  }
+};
+
 
