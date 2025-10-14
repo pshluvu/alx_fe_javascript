@@ -1,13 +1,30 @@
-let quotes = JSON.parse(localStorage.getItem("quotes")) || [
-  { text: "The best way to predict the future is to invent it.", author: "Alan Kay", category: "Motivation" },
-  { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci", category: "Philosophy" }
-];
+let quotes = JSON.parse(localStorage.getItem("quotes")) || [];
 
 let lastSelectedCategory = localStorage.getItem("selectedCategory") || "all";
 
 // ✅ Save quotes to local storage
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+// ✅ Fetch quotes from server or local JSON file
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch("quotes.json"); // Replace with your API endpoint if needed
+    if (!response.ok) throw new Error("Network response was not ok");
+    const serverQuotes = await response.json();
+
+    // Merge new quotes, avoiding duplicates
+    const existingTexts = new Set(quotes.map(q => q.text));
+    const newQuotes = serverQuotes.filter(q => !existingTexts.has(q.text));
+    quotes.push(...newQuotes);
+
+    saveQuotes();
+    populateCategories();
+    console.log("Quotes fetched and saved successfully from server.");
+  } catch (error) {
+    console.error("Error fetching quotes:", error);
+  }
 }
 
 // ✅ Generate random quote
@@ -63,42 +80,5 @@ function getFilteredQuotes() {
 
 function filterQuotes() {
   const selectedCategory = document.getElementById("categoryFilter").value;
-  localStorage.setItem("selectedCategory", selectedCategory);
-  lastSelectedCategory = selectedCategory;
-  generateQuote();
-}
+  localStorage.setItem("selectedCategory", selecte
 
-// ✅ Export quotes as JSON file
-function exportToJsonFile() {
-  const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "quotes.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ✅ Import quotes from JSON file
-function importFromJsonFile(event) {
-  const fileReader = new FileReader();
-  fileReader.onload = function(e) {
-    const importedQuotes = JSON.parse(e.target.result);
-    quotes.push(...importedQuotes);
-    saveQuotes();
-    populateCategories();
-    alert("Quotes imported successfully!");
-  };
-  fileReader.readAsText(event.target.files[0]);
-}
-
-// ✅ Initialize app
-window.onload = function() {
-  populateCategories();
-  const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
-  if (lastQuote) {
-    document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
-  } else {
-    generateQuote();
-  }
-};
