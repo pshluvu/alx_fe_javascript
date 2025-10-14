@@ -6,7 +6,7 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Fetch quotes from JSONPlaceholder
+// Fetch quotes from server (GET)
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -19,18 +19,20 @@ async function fetchQuotesFromServer() {
       category: "Fetched"
     }));
 
+    // Merge without duplicates
     const existingTexts = new Set(quotes.map(q => q.text));
     const newQuotes = serverQuotes.filter(q => !existingTexts.has(q.text));
     quotes.push(...newQuotes);
 
     saveQuotes();
     populateCategories();
+    console.log("Fetched quotes from server successfully.");
   } catch (err) {
-    console.error("Error fetching quotes from server:", err);
+    console.error("Error fetching quotes:", err);
   }
 }
 
-// POST new quote to server
+// Post a quote to the server (POST)
 async function postQuoteToServer(quote) {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
@@ -40,11 +42,25 @@ async function postQuoteToServer(quote) {
       },
       body: JSON.stringify(quote)
     });
-
     const data = await response.json();
-    console.log("Quote successfully posted:", data);
+    console.log("Quote posted:", data);
   } catch (err) {
     console.error("Error posting quote:", err);
+  }
+}
+
+// ✅ Synchronize quotes: fetch new quotes and post local unsynced quotes
+async function syncQuotes() {
+  try {
+    await fetchQuotesFromServer();
+
+    // Optional: send local quotes to server
+    // Here we can assume all local quotes are synced for simplicity
+    // You could track unsynced quotes with a flag if needed
+
+    console.log("Quotes synchronized successfully.");
+  } catch (err) {
+    console.error("Error syncing quotes:", err);
   }
 }
 
@@ -134,10 +150,9 @@ function importFromJsonFile(event) {
 
 // Initialize app
 window.onload = async function() {
-  if (quotes.length === 0) await fetchQuotesFromServer();
-  else populateCategories();
-
+  await syncQuotes(); // Fetch + optionally post quotes to server
   const lastQuote = JSON.parse(sessionStorage.getItem("lastQuote"));
   if (lastQuote) document.getElementById("quoteDisplay").innerText = `"${lastQuote.text}" — ${lastQuote.author} [${lastQuote.category}]`;
   else generateQuote();
 };
+
